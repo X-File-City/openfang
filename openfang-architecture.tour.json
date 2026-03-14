@@ -1,0 +1,349 @@
+{
+  "id": "openfang-architecture",
+  "title": "OpenFang: Agent Operating System Architecture",
+  "description": "A guided tour through OpenFang's 14-crate Rust workspace — from foundational types to the kernel, runtime, 40 channel adapters, and beyond.",
+  "version": "1.0.0",
+  "steps": [
+    {
+      "id": "overview",
+      "title": "Welcome to OpenFang",
+      "description": "OpenFang is an open-source Agent Operating System written in Rust. The workspace contains 14 crates, 32 built-in agent templates, Python and JavaScript SDKs, and a Tauri desktop app. The codebase follows a strict layered architecture where `openfang-types` sits at the bottom with zero internal dependencies, and `openfang-cli` sits at the top consuming everything. Let's walk through each layer.",
+      "colorMode": "fileTypes",
+      "focusDirectory": "",
+      "highlightLayers": [
+        {
+          "id": "workspace-root",
+          "name": "Workspace Config",
+          "color": "#94a3b8",
+          "items": [
+            { "path": "Cargo.toml", "type": "file" },
+            { "path": "Cargo.lock", "type": "file" },
+            { "path": "rust-toolchain.toml", "type": "file" }
+          ],
+          "opacity": 0.7,
+          "renderStrategy": "border"
+        },
+        {
+          "id": "all-crates",
+          "name": "All 14 Crates",
+          "color": "#f97316",
+          "items": [
+            { "path": "crates", "type": "directory" }
+          ],
+          "opacity": 0.5,
+          "renderStrategy": "border"
+        }
+      ]
+    },
+    {
+      "id": "foundation-types",
+      "title": "Foundation: Shared Types",
+      "description": "openfang-types is the base layer with zero internal crate dependencies. It defines every shared type: AgentManifest, Capability, Event, ToolDefinition, KernelConfig, TaintLabel, and more. All other crates depend on it. Config structs use `#[serde(default)]` for forward-compatible TOML parsing. The module also includes Ed25519 manifest signing, model catalog types, and MCP/A2A config types.",
+      "focusDirectory": "crates/openfang-types",
+      "colorMode": "fileTypes",
+      "highlightLayers": [
+        {
+          "id": "types-core",
+          "name": "Core Type Modules",
+          "color": "#8b5cf6",
+          "items": [
+            { "path": "crates/openfang-types/src", "type": "directory" }
+          ],
+          "opacity": 0.7,
+          "renderStrategy": "border"
+        }
+      ]
+    },
+    {
+      "id": "memory-layer",
+      "title": "Data Layer: SQLite Memory Substrate",
+      "description": "openfang-memory provides a unified memory API over SQLite with 5 schema versions. It offers structured key-value storage, semantic search (LIKE matching now, Qdrant vectors planned), a knowledge graph with entities and relations, session management, a task board, and usage event persistence. All SQLite access is async-safe via spawn_blocking with Arc<Mutex<Connection>>.",
+      "focusDirectory": "crates/openfang-memory",
+      "colorMode": "fileTypes",
+      "highlightLayers": [
+        {
+          "id": "memory-modules",
+          "name": "Memory Subsystems",
+          "color": "#06b6d4",
+          "items": [
+            { "path": "crates/openfang-memory/src", "type": "directory" }
+          ],
+          "opacity": 0.7,
+          "renderStrategy": "border"
+        }
+      ]
+    },
+    {
+      "id": "runtime-engine",
+      "title": "Execution Engine: The Runtime",
+      "description": "openfang-runtime is the most complex crate with 39+ modules. It contains the agent execution loop (regular and streaming SSE), LLM drivers for 6 providers (Anthropic, OpenAI, Gemini, Copilot, Claude Code, Qwen Code), tool execution, WASM sandboxing via Wasmtime with dual fuel+epoch metering, MCP client/server, A2A protocol support, web search (4 providers), and safety systems like loop guard (SHA256-based) and context budget management.",
+      "focusDirectory": "crates/openfang-runtime",
+      "colorMode": "fileTypes",
+      "highlightLayers": [
+        {
+          "id": "runtime-src",
+          "name": "Runtime Engine",
+          "color": "#ef4444",
+          "items": [
+            { "path": "crates/openfang-runtime/src", "type": "directory" }
+          ],
+          "opacity": 0.7,
+          "renderStrategy": "border"
+        }
+      ]
+    },
+    {
+      "id": "kernel-coordinator",
+      "title": "The Kernel: Central Coordinator",
+      "description": "openfang-kernel assembles all subsystems into the OpenFangKernel struct. It manages AgentRegistry, EventBus, Supervisor (health monitoring), WorkflowEngine (max 200 concurrent runs), TriggerEngine, BackgroundExecutor, RBAC auth, metering, MCP connections, and OFP peer networking. The boot sequence has 14 stages from config loading through background agent startup. The KernelHandle trait avoids circular dependencies between runtime and kernel.",
+      "focusDirectory": "crates/openfang-kernel",
+      "colorMode": "fileTypes",
+      "highlightLayers": [
+        {
+          "id": "kernel-core",
+          "name": "Kernel Modules",
+          "color": "#f59e0b",
+          "items": [
+            { "path": "crates/openfang-kernel/src", "type": "directory" }
+          ],
+          "opacity": 0.7,
+          "renderStrategy": "border"
+        }
+      ]
+    },
+    {
+      "id": "connectivity",
+      "title": "Connectivity: Channels & Wire Protocol",
+      "description": "openfang-channels provides 40+ pluggable channel adapters (Discord, Slack, Telegram, WhatsApp, Matrix, IRC, email, and many more) that convert platform messages into a unified ChannelMessage type. openfang-wire implements the OpenFang Protocol (OFP) for peer-to-peer agent networking over TCP with HMAC-SHA256 mutual authentication. Together they let agents communicate across any messaging platform and directly with other OpenFang instances.",
+      "focusDirectory": "crates",
+      "colorMode": "fileTypes",
+      "highlightLayers": [
+        {
+          "id": "channels",
+          "name": "40 Channel Adapters",
+          "color": "#22c55e",
+          "items": [
+            { "path": "crates/openfang-channels", "type": "directory" }
+          ],
+          "opacity": 0.7,
+          "renderStrategy": "border"
+        },
+        {
+          "id": "wire-protocol",
+          "name": "OFP Wire Protocol",
+          "color": "#3b82f6",
+          "items": [
+            { "path": "crates/openfang-wire", "type": "directory" }
+          ],
+          "opacity": 0.7,
+          "renderStrategy": "border"
+        }
+      ]
+    },
+    {
+      "id": "extensibility",
+      "title": "Extensibility: Skills, Hands & Extensions",
+      "description": "Three crates handle extensibility. openfang-skills manages 60 bundled skills with 4 runtimes (Prompt, Python, WASM, Node) plus FangHub and ClawHub marketplace integration with prompt injection scanning. openfang-hands provides curated autonomous agent packages across 6 categories. openfang-extensions offers one-click MCP server setup with an AES-256-GCM encrypted credential vault, OAuth2 PKCE flows, and 25 bundled integrations (GitHub, Slack, Notion, Linear, etc.).",
+      "focusDirectory": "crates",
+      "colorMode": "fileTypes",
+      "highlightLayers": [
+        {
+          "id": "skills",
+          "name": "Skills (60 Bundled)",
+          "color": "#a855f7",
+          "items": [
+            { "path": "crates/openfang-skills", "type": "directory" }
+          ],
+          "opacity": 0.7,
+          "renderStrategy": "border"
+        },
+        {
+          "id": "hands",
+          "name": "Hands (Agent Packages)",
+          "color": "#ec4899",
+          "items": [
+            { "path": "crates/openfang-hands", "type": "directory" }
+          ],
+          "opacity": 0.7,
+          "renderStrategy": "border"
+        },
+        {
+          "id": "extensions",
+          "name": "Extensions (MCP + Vault)",
+          "color": "#14b8a6",
+          "items": [
+            { "path": "crates/openfang-extensions", "type": "directory" }
+          ],
+          "opacity": 0.7,
+          "renderStrategy": "border"
+        }
+      ]
+    },
+    {
+      "id": "interfaces",
+      "title": "Interfaces: API, CLI & Desktop",
+      "description": "openfang-api is an Axum 0.8 server with 76+ REST endpoints, WebSocket support, SSE streaming, OpenAI-compatible endpoints, GCRA rate limiting, and session auth. openfang-cli is the Clap-based CLI with daemon auto-detection and a 25-screen ratatui TUI dashboard. openfang-desktop wraps everything in a Tauri 2.0 native app with system tray, global hotkeys, and auto-updates. All three are top-level consumers of the kernel.",
+      "focusDirectory": "crates",
+      "colorMode": "fileTypes",
+      "highlightLayers": [
+        {
+          "id": "api-server",
+          "name": "REST API (76+ endpoints)",
+          "color": "#f97316",
+          "items": [
+            { "path": "crates/openfang-api", "type": "directory" }
+          ],
+          "opacity": 0.7,
+          "renderStrategy": "border"
+        },
+        {
+          "id": "cli-tui",
+          "name": "CLI + TUI Dashboard",
+          "color": "#eab308",
+          "items": [
+            { "path": "crates/openfang-cli", "type": "directory" }
+          ],
+          "opacity": 0.7,
+          "renderStrategy": "border"
+        },
+        {
+          "id": "desktop-app",
+          "name": "Tauri Desktop App",
+          "color": "#6366f1",
+          "items": [
+            { "path": "crates/openfang-desktop", "type": "directory" }
+          ],
+          "opacity": 0.7,
+          "renderStrategy": "border"
+        }
+      ]
+    },
+    {
+      "id": "ecosystem",
+      "title": "Ecosystem: Agents, SDKs & Deployment",
+      "description": "Beyond the Rust crates, the repo includes 32 built-in agent templates in agents/ (from hello-world to orchestrator), Python and JavaScript SDKs in sdk/, a WhatsApp gateway in packages/, deployment configs (Docker, systemd) in deploy/, installation scripts in scripts/, and 20 comprehensive documentation files in docs/. The agents/ directory shows how agent manifests (agent.toml) define capabilities, model config, and tool access.",
+      "focusDirectory": "",
+      "colorMode": "fileTypes",
+      "highlightLayers": [
+        {
+          "id": "agent-templates",
+          "name": "32 Agent Templates",
+          "color": "#f43f5e",
+          "items": [
+            { "path": "agents", "type": "directory" }
+          ],
+          "opacity": 0.7,
+          "renderStrategy": "border"
+        },
+        {
+          "id": "sdks",
+          "name": "Python & JS SDKs",
+          "color": "#0ea5e9",
+          "items": [
+            { "path": "sdk", "type": "directory" }
+          ],
+          "opacity": 0.7,
+          "renderStrategy": "border"
+        },
+        {
+          "id": "deployment",
+          "name": "Deploy & Scripts",
+          "color": "#84cc16",
+          "items": [
+            { "path": "deploy", "type": "directory" },
+            { "path": "scripts", "type": "directory" },
+            { "path": "Dockerfile", "type": "file" },
+            { "path": "docker-compose.yml", "type": "file" }
+          ],
+          "opacity": 0.7,
+          "renderStrategy": "border"
+        },
+        {
+          "id": "documentation",
+          "name": "Documentation",
+          "color": "#a78bfa",
+          "items": [
+            { "path": "docs", "type": "directory" }
+          ],
+          "opacity": 0.7,
+          "renderStrategy": "border"
+        }
+      ]
+    },
+    {
+      "id": "full-architecture",
+      "title": "The Complete Picture",
+      "description": "OpenFang's layered architecture flows bottom-up: Types (foundation) → Memory (data) → Runtime (execution) → Kernel (coordination) → API/CLI/Desktop (interfaces). Cross-cutting concerns like Channels, Wire, Skills, Hands, and Extensions plug into the kernel. The result is a modular, capability-secured Agent OS with 1744+ tests, 76+ API endpoints, 40 channel adapters, 60 skills, and support for 20+ LLM providers.",
+      "focusDirectory": "",
+      "colorMode": "fileTypes",
+      "highlightLayers": [
+        {
+          "id": "layer-foundation",
+          "name": "Foundation (Types)",
+          "color": "#8b5cf6",
+          "items": [
+            { "path": "crates/openfang-types", "type": "directory" }
+          ],
+          "opacity": 0.6,
+          "renderStrategy": "border"
+        },
+        {
+          "id": "layer-data",
+          "name": "Data (Memory)",
+          "color": "#06b6d4",
+          "items": [
+            { "path": "crates/openfang-memory", "type": "directory" }
+          ],
+          "opacity": 0.6,
+          "renderStrategy": "border"
+        },
+        {
+          "id": "layer-execution",
+          "name": "Execution (Runtime)",
+          "color": "#ef4444",
+          "items": [
+            { "path": "crates/openfang-runtime", "type": "directory" }
+          ],
+          "opacity": 0.6,
+          "renderStrategy": "border"
+        },
+        {
+          "id": "layer-coordination",
+          "name": "Coordination (Kernel)",
+          "color": "#f59e0b",
+          "items": [
+            { "path": "crates/openfang-kernel", "type": "directory" }
+          ],
+          "opacity": 0.6,
+          "renderStrategy": "border"
+        },
+        {
+          "id": "layer-interfaces",
+          "name": "Interfaces (API/CLI/Desktop)",
+          "color": "#f97316",
+          "items": [
+            { "path": "crates/openfang-api", "type": "directory" },
+            { "path": "crates/openfang-cli", "type": "directory" },
+            { "path": "crates/openfang-desktop", "type": "directory" }
+          ],
+          "opacity": 0.6,
+          "renderStrategy": "border"
+        },
+        {
+          "id": "layer-plugins",
+          "name": "Plugins (Channels/Wire/Skills/Hands/Extensions)",
+          "color": "#22c55e",
+          "items": [
+            { "path": "crates/openfang-channels", "type": "directory" },
+            { "path": "crates/openfang-wire", "type": "directory" },
+            { "path": "crates/openfang-skills", "type": "directory" },
+            { "path": "crates/openfang-hands", "type": "directory" },
+            { "path": "crates/openfang-extensions", "type": "directory" }
+          ],
+          "opacity": 0.6,
+          "renderStrategy": "border"
+        }
+      ]
+    }
+  ]
+}
